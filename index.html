@@ -29,9 +29,9 @@
         body {
             margin: 0;
             min-height: 100%;
-            color: var(--text);
-            background-color: #06070a;
-            background-image: linear-gradient(rgba(20, 24, 33, 0.75), rgba(20, 24, 33, 0.75));
+            color: #1a1a1a;
+            background-color: #f6efe6;
+            background-image: linear-gradient(rgba(226, 218, 201, 0.82), rgba(226, 218, 201, 0.82));
             overflow-x: hidden;
         }
 
@@ -112,18 +112,19 @@
             margin: 0;
             font-size: clamp(2rem, 2.3vw, 2.6rem);
             line-height: 1.05;
-            color: #fff;
+            color: #1a1a1a;
         }
 
         .card {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(10, 12, 18, 0.88));
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.70);
+            border: 1px solid rgba(0, 0, 0, 0.08);
             border-radius: var(--radius);
             padding: 22px;
-            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(8px);
             width: 100%;
             min-width: 0;
+            color: #2b2b2b;
             /* Critical browser fix for grid squeezing */
         }
 
@@ -146,7 +147,7 @@
             margin: 0;
             font-size: 1.05rem;
             line-height: 1.74;
-            color: #f4f6f8;
+            color: #2b2b2b;
         }
 
         .motivation-extra {
@@ -184,7 +185,7 @@
         }
 
         .tip-card p {
-            color: #ffffff;
+            color: #2b2b2b;
             font-weight: 600;
             font-size: 1.05rem;
             line-height: 1.65;
@@ -218,7 +219,7 @@
         .streak-card strong {
             display: block;
             font-size: 1rem;
-            color: #fff;
+            color: #2b2b2b;
         }
 
         .streak-badge {
@@ -227,9 +228,10 @@
             gap: 8px;
             padding: 10px 14px;
             border-radius: 999px;
-            background: rgba(255, 59, 48, 0.16);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.72);
+            color: #2b2b2b;
             font-weight: 700;
+            border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         /* HEAVY DUTY MOBILE OVERRIDES */
@@ -254,23 +256,25 @@
             font-size: 0.95rem;
         }
 
+        .weekly-tracker-table th,
+        .tracker-header,
         th {
+            color: #2b2b2b !important;
+            font-weight: 600;
             text-align: left;
-            color: var(--muted);
-            font-weight: 700;
         }
 
         td {
-            color: #edf0f4;
+            color: #2b2b2b;
         }
 
         .status-select,
         .macro-input {
             width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.08);
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.04);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.70);
+            color: #2b2b2b;
             padding: 12px 14px;
             font-size: 0.95rem;
         }
@@ -303,7 +307,7 @@
             display: grid;
             gap: 6px;
             font-size: 0.86rem;
-            color: var(--muted);
+            color: #2b2b2b;
         }
 
         .actions {
@@ -329,9 +333,9 @@
         }
 
         .file-btn {
-            background: rgba(255, 255, 255, 0.08);
-            color: #f3f6f9;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.70);
+            color: #2b2b2b;
+            border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .btn:hover,
@@ -390,8 +394,9 @@
 
         @media (max-width: 768px) {
             body {
+                color: #1a1a1a;
                 background-image:
-                    linear-gradient(rgba(20, 24, 33, 0.75), rgba(20, 24, 33, 0.75)),
+                    linear-gradient(rgba(226, 218, 201, 0.82), rgba(226, 218, 201, 0.82)),
                     url('W1.jpeg');
                 background-position: center top;
                 background-repeat: no-repeat;
