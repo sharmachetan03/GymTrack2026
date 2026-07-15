@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Fitness journey 2026</title>
+    <!-- Official Supabase CDN Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-start: #080a0f;
+            --bg-mid: #0f1118;
+            --bg-end: #09090d;
+            --card: rgba(18, 22, 30, 0.92);
+            --muted: #9fa6ad;
+            --text: #eef0f4;
+            --accent: #ff3b30;
+            --accent-2: #ff8b2a;
+            --radius: 18px;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+            color: var(--text);
+            background-color: #06070a;
+            overflow-x: hidden;
+        }
+
+        /* The actual background gradient container pushed to the lowest layer */
+        .cyberpunk-bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image:
+                radial-gradient(circle at 15% 20%, rgba(139, 92, 246, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 75%, rgba(255, 59, 48, 0.1), transparent 20%),
+                linear-gradient(180deg, #06070a 0%, #0b0c16 50%, #05060a 100%);
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-size: cover;
+            z-index: -3;
+        }
+
+        /* 4-Quadrant Fixed Sidebar Watermark Layout */
+        .photo-watermark-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.18;
+        }
+
+        .watermark-quadrant {
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 100%;
+            height: 100%;
+        }
+
+        .photo-watermark-grid div:nth-child(1) {
+            background-position: top left;
+        }
+
+        .photo-watermark-grid div:nth-child(2) {
+            background-position: top right;
+        }
+
+        .photo-watermark-grid div:nth-child(3) {
+            background-position: bottom left;
+        }
+
+        .photo-watermark-grid div:nth-child(4) {
+            background-position: bottom right;
+        }
+
+        .page {
+            max-width: 1160px;
+            margin: 32px auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            min-height: calc(100vh - 64px);
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(2rem, 2.3vw, 2.6rem);
+            line-height: 1.05;
+            color: #fff;
+        }
+
+        .card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(10, 12, 18, 0.88));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius);
+            padding: 22px;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            min-width: 0;
+            /* Critical browser fix for grid squeezing */
+        }
+
+        .section-title {
+            margin: 0 0 16px;
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+        }
+
+        .hero-box {
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 24px;
+        }
+
+        .hero-box p {
+            margin: 0;
+            font-size: 1.05rem;
+            line-height: 1.74;
+            color: #f4f6f8;
+        }
+
+        .motivation-extra {
+            margin-top: 24px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .streak-card,
+        .tip-card {
+            border-radius: 16px;
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .tip-card {
+            position: relative;
+            background: linear-gradient(135deg, rgba(255, 138, 42, 0.08) 0%, rgba(255, 59, 48, 0.03) 100%);
+            border: 1px solid rgba(255, 138, 42, 0.25);
+            overflow: hidden;
+        }
+
+        .tip-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background: linear-gradient(180deg, var(--accent-2), var(--accent));
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 6px 18px rgba(255, 138, 42, 0.06);
+        }
+
+        .tip-card p {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1.05rem;
+            line-height: 1.65;
+            margin: 0;
+        }
+
+        .reset-btn {
+            background: rgba(255, 59, 48, 0.1);
+            color: #ff453a;
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 10px;
+            padding: 6px 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 59, 48, 0.25);
+            border-color: #ff3b30;
+            transform: translateY(-1px);
+        }
+
+        .streak-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .streak-card strong {
+            display: block;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .streak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255, 59, 48, 0.16);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        /* HEAVY DUTY MOBILE OVERRIDES */
+        .table-wrap {
+            width: 100% !important;
+            display: block !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            margin-top: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        th,
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.95rem;
+        }
+
+        th {
+            text-align: left;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        td {
+            color: #edf0f4;
+        }
+
+        .status-select,
+        .macro-input {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+            padding: 12px 14px;
+            font-size: 0.95rem;
+        }
+
+        input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: #ffffff;
+            background-color: #000000;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            appearance: auto;
+        }
+
+        input[type="checkbox"]:disabled {
+            accent-color: #ffffff !important;
+            background-color: #000000 !important;
+            filter: invert(1) hue-rotate(180deg);
+        }
+
+        .macro-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 14px;
+            align-items: end;
+        }
+
+        .macro-form label {
+            display: grid;
+            gap: 6px;
+            font-size: 0.86rem;
+            color: var(--muted);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .btn,
+        .file-btn {
+            border: none;
+            border-radius: 14px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            color: #08090b;
+        }
+
+        .file-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f3f6f9;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn:hover,
+        .file-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 30px rgba(255, 59, 48, 0.18);
+        }
+
+        .gallery {
+            display: grid;
+            gap: 18px;
+        }
+
+        .gallery img {
+            width: 100%;
+            min-height: 260px;
+            max-height: 320px;
+            object-fit: contain;
+            object-position: top center;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        .upload-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        footer {
+            grid-column: 1 / -1;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 980px) {
+            .page {
+                grid-template-columns: 1fr;
+                padding: 14px;
+                margin: 12px auto;
+            }
+
+            .macro-form {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                background-image:
+                    linear-gradient(rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.88)),
+                    url('W1.jpeg');
+                background-position: center top;
+                background-repeat: no-repeat;
+                background-size: cover;
+                background-attachment: scroll;
+            }
+
+            .left-watermark-panel,
+            .right-watermark-panel,
+            .watermark-grid-container {
+                display: none !important;
+            }
+
+            .photo-watermark-grid {
+                display: grid !important;
+                opacity: 0.22;
+                z-index: 0;
+                pointer-events: none;
+            }
+
+            .watermark-quadrant {
+                background-size: cover;
+                background-position: center;
+            }
+
+            .page {
+                width: 100% !important;
+                margin: 0px !important;
+                padding: 10px !important;
+            }
+
+            table {
+                min-width: 540px !important;
+                /* Locks layout size so columns cannot shrink */
+            }
+
+            th,
+            td {
+                white-space: nowrap !important;
+                /* Force text to stay on single clean line */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Deepest background layer -->
+    <div class="cyberpunk-bg-gradient"></div>
+
+    <!-- Image watermark layer -->
+    <div class="photo-watermark-grid">
+        <div class="watermark-quadrant" style="background-image: url('W4.jpeg');"></div>
+        <div class="watermark-quadrant" style="background-image: url('W3.jpeg');"></div>
+        <div class="watermark-quadrant" style="background-image: url('W2.jpeg');"></div>
+        <div class="watermark-quadrant" style="background-image: url('W1.jpeg');"></div>
+    </div>
+    <div class="page">
+        <header style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 16px;">
+            <div>
+                <h1>My Fitness journey 2026</h1>
+            </div>
+            <button id="lockToggleBtn" class="reset-btn"
+                style="background: rgba(255,138,42,0.1); color: var(--accent-2); border-color: rgba(255,138,42,0.3); white-space: nowrap;"
+                type="button" onclick="handleDashboardLockToggle()">🔒 Locked</button>
+        </header>
+
+        <section class="card">
+            <div class="section-title">Motivation</div>
+            <div class="hero-box">
+                <p>"No excuses. No options. When the alarm goes off, you get up and you hit the gym - no questions
+                    asked. Every single drop of sweat is an investment in the health you're building. It's simple: you
+                    never give up until the very last rep. The pain you feel today is just the fuel you need to become
+                    better, stronger, and unstoppable tomorrow. Pain today, gain tomorrow."</p>
+            </div>
+            <div class="motivation-extra">
+                <div class="streak-card">
+                    <strong id="streakMessage">Consistency Streak Tracker</strong>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span
+                            style="font-size: 0.78rem; color: var(--accent-2); background: rgba(255, 138, 42, 0.1); border: 1px solid rgba(255, 138, 42, 0.2); padding: 4px 8px; border-radius: 6px; font-weight: 6px; text-transform: uppercase; letter-spacing: 0.05em;">☀️
+                            Sunday Rest Day</span>
+                        <span class="streak-badge" id="streakBadge">0 Days</span>
+                    </div>
+                </div>
+                <div class="tip-card">
+                    <p id="healthTip">Loading a health tip...</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                <div class="section-title">Weekly Exercise Tracker</div>
+                <button class="reset-btn" type="button" onclick="resetWeeklyTracker()">Reset Routine</button>
+            </div>
+            <div class="table-wrap">
+                <table id="weekTable">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Workout</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section-title">Daily Macro & Calorie Logger</div>
+            <form class="macro-form" onsubmit="event.preventDefault(); submitMacro();">
+                <label>
+                    Date
+                    <input id="macroDate" class="macro-input" type="date" required />
+                </label>
+                <label>
+                    Protein (g)
+                    <input id="macroProtein" class="macro-input" type="number" min="0" required />
+                </label>
+                <label>
+                    Fat (g)
+                    <input id="macroFat" class="macro-input" type="number" min="0" required />
+                </label>
+                <label>
+                    Carbs (g)
+                    <input id="macroCarbs" class="macro-input" type="number" min="0" required />
+                </label>
+                <label>
+                    Fibers (g)
+                    <input id="macroFibers" class="macro-input" type="number" min="0" required />
+                </label>
+            </form>
+            <div class="actions">
+                <button class="btn" type="button" onclick="submitMacro()">Update / Log</button>
+                <button class="file-btn" type="button" onclick="downloadMacroCsv()">Download as Excel (CSV)</button>
+            </div>
+            <div class="table-wrap">
+                <table id="macroTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Protein</th>
+                            <th>Fat</th>
+                            <th>Carbs</th>
+                            <th>Fibers</th>
+                            <th>Calories</th>
+                        </tr>
+                    </thead>
+                    <tbody id="macroHistoryBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <aside class="gallery card">
+            <div class="section-title">Gym Gallery</div>
+            <div class="gallery">
+                <img id="galleryImage1" src="Gym1.jpeg" alt="Gym image 1" />
+                <img id="galleryImage2" src="Gym2.jpeg" alt="Gym image 2" />
+            </div>
+            <div class="upload-row">
+                <label class="file-btn" for="galleryUpload">Upload New Journey Pic</label>
+                <input id="galleryUpload" class="file-input" type="file" accept="image/*" />
+                <button class="btn" type="button" onclick="clearGallery()">Clear Uploads</button>
+            </div>
+        </aside>
+
+        <footer>Everything is designed to stay sharp in the browser and sync to Supabase for your routine tracking.
+        </footer>
+
+        <!-- Secure Password Modal overlay -->
+        <div id="passwordModal"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 6, 10, 0.85); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center;">
+            <div class="card"
+                style="width: 90%; max-width: 360px; text-align: center; padding: 30px 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+                <div class="section-title" style="margin-bottom: 20px; font-size: 1.1rem;">🔐 Enter Admin Password</div>
+                <input type="password" id="modalPasswordInput" class="modal-pass-field"
+                    style="width: 100%; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; background: rgba(255, 255, 255, 0.04); color: #fff; padding: 12px 14px; text-align: center; font-size: 1.2rem; letter-spacing: 0.3em; margin-bottom: 20px;"
+                    placeholder="••••••••" onkeydown="if(event.key==='Enter') submitPasswordModal()">
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button class="file-btn" type="button" style="padding: 10px 20px;"
+                        onclick="closePasswordModal()">Cancel</button>
+                    <button class="btn" type="button" style="padding: 10px 20px;"
+                        onclick="submitPasswordModal()">Unlock</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://smivoaaurwadmwrksgsk.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_LcUVdAnWHsuuEDnUuRxy8g_MMqwNO2k";
+
+        // Isolated initialization mapping to clean up variable collisions entirely
+        const appDbEngine = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const exerciseWeek = [
+            { day: 'Monday', workout: 'Back & Biceps' },
+            { day: 'Tuesday', workout: 'Abs & Cardio' },
+            { day: 'Wednesday', workout: 'Chest & Shoulders' },
+            { day: 'Thursday', workout: 'Abs & Cardio' },
+            { day: 'Friday', workout: 'Legs & Triceps' },
+            { day: 'Saturday', workout: 'Abs & Cardio' }
+        ];
+
+        const healthTips = [
+            'Hydration improves recovery, supports muscle function, and helps you feel sharper throughout the day.',
+            'Fiber promotes gut health, helps manage hunger, and supports steady energy levels.',
+            'Progressive overload is the key to consistent gains: aim to gradually challenge your weights or reps.',
+            'Recovery matters as much as training: sleep, nutrition, and rest days help your muscles rebuild.',
+            'Protein intake after training supports muscle repair, while carbs replenish glycogen stores.',
+            'Consistent movement and balanced nutrition together build resilience faster than drastic changes.'
+        ];
+
+        // 1. Render Workout List Rows dynamically
+        async function loadWeekStatus() {
+            try {
+                const { data, error } = await appDbEngine.from('workout_tracker').select('*').order('id', { ascending: true });
+                const tbody = document.querySelector('#weekTable tbody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (error || !data || data.length === 0) {
+                    exerciseWeek.forEach(item => renderWorkoutRow(item.day, item.workout, 'No'));
+                } else {
+                    data.forEach(item => renderWorkoutRow(item.day, item.workout, item.status));
+                }
+            } catch (err) {
+                const tbody = document.querySelector('#weekTable tbody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="3">Failed to load schedule.</td></tr>';
+            }
+        }
+
+        function renderWorkoutRow(day, workout, status) {
+            const tbody = document.querySelector('#weekTable tbody');
+            const row = document.createElement('tr');
+            const isChecked = status === 'Yes' ? 'checked' : '';
+            row.innerHTML = `
+                <td>${day}</td>
+                <td>${workout}</td>
+                <td><input type="checkbox" ${isChecked} onchange="toggleWorkout('${day}', this.checked)"></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        // 2. Toggle Sync to Cloud
+        async function toggleWorkout(day, isChecked) {
+            const statusText = isChecked ? 'Yes' : 'No';
+            try {
+                await appDbEngine.from('workout_tracker').update({ status: statusText }).eq('day', day);
+                updateStreak();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Reset weekly tracker to 'No' for all days
+        async function resetWeeklyTracker() {
+            if (!confirm("Are you sure you want to reset your weekly workout progress?")) return;
+            try {
+                const { error } = await appDbEngine
+                    .from('workout_tracker')
+                    .update({ status: 'No' })
+                    .neq('day', 'ForceAllRowsToMatch');
+
+                if (error) throw error;
+                await loadWeekStatus();
+                alert("Routine reset successfully! Ready for a fresh week. 🔥");
+            } catch (err) {
+                console.error("Error resetting tracker:", err);
+                alert("Could not reset progress in the cloud.");
+            }
+        }
+
+        // 3. Load Macro History Engine (10-Day Visual Rolling Cutoff)
+        async function loadMacroLog() {
+            try {
+                // Generate a rolling date threshold for exactly 10 days ago
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - 10);
+                const isoCutoffString = cutoffDate.toISOString().split('T')[0];
+
+                // Query Supabase for only recent records to render on screen
+                const { data, error } = await appDbEngine
+                    .from('macro_logger')
+                    .select('*')
+                    .gte('date', isoCutoffString)
+                    .order('date', { ascending: false });
+
+                const tbody = document.getElementById('macroHistoryBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (data && data.length > 0) {
+                    data.forEach(log => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${log.date}</td>
+                            <td>${log.protein}g</td>
+                            <td>${log.fat}g</td>
+                            <td>${log.carbs}g</td>
+                            <td>${log.fibers}g</td>
+                            <td>${log.calories} kcal</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+                updateStreak();
+            } catch (err) {
+                console.error("Error running macro history query filter:", err);
+            }
+        }
+
+        // 4. Form Submission Binding Matching HTML Hooks
+        async function submitMacro() {
+            const date = document.getElementById('macroDate').value;
+            const protein = parseInt(document.getElementById('macroProtein').value) || 0;
+            const fat = parseInt(document.getElementById('macroFat').value) || 0;
+            const carbs = parseInt(document.getElementById('macroCarbs').value) || 0;
+            const fibers = parseInt(document.getElementById('macroFibers').value) || 0;
+
+            if (!date) {
+                alert("Please select a date first.");
+                return;
+            }
+
+            const calories = (protein * 4) + (carbs * 4) + (fat * 9);
+
+            try {
+                const { data: existing } = await appDbEngine.from('macro_logger').select('id').eq('date', date).maybeSingle();
+
+                if (existing) {
+                    await appDbEngine.from('macro_logger').update({ protein, fat, carbs, fibers, calories }).eq('date', date);
+                } else {
+                    await appDbEngine.from('macro_logger').insert([{ date, protein, fat, carbs, fibers, calories }]);
+                }
+
+                document.getElementById('macroProtein').value = '';
+                document.getElementById('macroFat').value = '';
+                document.getElementById('macroCarbs').value = '';
+                document.getElementById('macroFibers').value = '';
+
+                await loadMacroLog();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // 5. CSV Excel Download Hook
+        async function downloadMacroCsv() {
+            try {
+                const { data } = await appDbEngine.from('macro_logger').select('*').order('date', { ascending: false });
+                if (!data || data.length === 0) {
+                    alert("No logs to download yet.");
+                    return;
+                }
+
+                let csvContent = "data:text/csv;charset=utf-8,Date,Protein(g),Fat(g),Carbs(g),Fibers(g),Calories(kcal)\n";
+                data.forEach(log => {
+                    csvContent += `${log.date},${log.protein},${log.fat},${log.carbs},${log.fibers},${log.calories}\n`;
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "My_Fitness_Log.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // 6. Local Storage Image Upload Logic Fallbacks
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadInput = document.getElementById('galleryUpload');
+            if (uploadInput) {
+                uploadInput.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        let stored = JSON.parse(localStorage.getItem('fitnessGalleryImages')) || [];
+                        stored.unshift(reader.result);
+                        if (stored.length > 2) stored = stored.slice(0, 2);
+                        localStorage.setItem('fitnessGalleryImages', JSON.stringify(stored));
+                        renderGallery();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            renderGallery();
+        });
+
+        function renderGallery() {
+            const stored = JSON.parse(localStorage.getItem('fitnessGalleryImages')) || [];
+            if (stored[0]) document.getElementById('galleryImage1').src = stored[0];
+            if (stored[1]) document.getElementById('galleryImage2').src = stored[1];
+        }
+
+        function clearGallery() {
+            localStorage.removeItem('fitnessGalleryImages');
+            document.getElementById('galleryImage1').src = "Gym1.jpeg";
+            document.getElementById('galleryImage2').src = "Gym2.jpeg";
+        }
+
+        function setDashboardInputState(isLocked) {
+            const textInputs = document.querySelectorAll('.macro-input, input[type="file"]');
+            textInputs.forEach(input => input.disabled = isLocked);
+
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.disabled = isLocked;
+                cb.style.opacity = '1';
+                cb.style.cursor = isLocked ? 'not-allowed' : 'pointer';
+            });
+
+            const buttons = document.querySelectorAll('.btn, .file-btn, .reset-btn');
+            buttons.forEach(btn => {
+                if (btn.id === 'lockToggleBtn') return;
+                if (document.getElementById('passwordModal').contains(btn)) return;
+
+                btn.disabled = isLocked;
+                btn.style.opacity = isLocked ? '0.4' : '1';
+                btn.style.pointerEvents = isLocked ? 'none' : 'auto';
+            });
+        }
+
+        function handleDashboardLockToggle() {
+            const btn = document.getElementById('lockToggleBtn');
+            if (btn.innerText.includes('Unlocked')) {
+                // Relock everything instantly
+                setDashboardInputState(true);
+                btn.innerText = '🔒 Locked';
+                btn.style.color = 'var(--accent-2)';
+                btn.style.background = 'rgba(255,138,42,0.1)';
+                btn.style.borderColor = 'rgba(255,138,42,0.3)';
+                return;
+            }
+
+            // Open the hidden modal and clear old inputs
+            document.getElementById('modalPasswordInput').value = '';
+            document.getElementById('passwordModal').style.display = 'flex';
+            document.getElementById('modalPasswordInput').focus();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+        }
+
+        function submitPasswordModal() {
+            const passwordField = document.getElementById('modalPasswordInput');
+            const btn = document.getElementById('lockToggleBtn');
+
+            // Match against your password string securely
+            if (passwordField.value === "Chicu2016$") {
+                setDashboardInputState(false);
+                btn.innerText = '🔓 Unlocked';
+                btn.style.color = '#34c759';
+                btn.style.background = 'rgba(52,199,89,0.1)';
+                btn.style.borderColor = 'rgba(52,199,89,0.3)';
+                closePasswordModal();
+            } else {
+                alert("Incorrect password. Controls remain locked.");
+                passwordField.value = '';
+                passwordField.focus();
+            }
+        }
+
+        // 7. Core UI Engine Initializations
+        async function updateStreak() {
+            try {
+                const { data } = await appDbEngine.from('workout_tracker').select('day, status');
+                const badge = document.getElementById('streakBadge');
+                if (!badge || !data || data.length === 0) return;
+
+                const workoutMap = {};
+                data.forEach(item => {
+                    workoutMap[item.day.toLowerCase()] = item.status;
+                });
+
+                const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                let streak = 0;
+                let checkDate = new Date();
+                let lookbackCount = 0;
+                let streakBroken = false;
+
+                while (lookbackCount < 28 && !streakBroken) {
+                    const dayIndex = checkDate.getDay();
+                    const dayName = daysOfWeek[dayIndex];
+
+                    if (dayName === 'sunday') {
+                        checkDate.setDate(checkDate.getDate() - 1);
+                        lookbackCount++;
+                        continue;
+                    }
+
+                    const status = workoutMap[dayName];
+
+                    if (status === 'Yes') {
+                        streak++;
+                        checkDate.setDate(checkDate.getDate() - 1);
+                    } else {
+                        if (lookbackCount === 0) {
+                            checkDate.setDate(checkDate.getDate() - 1);
+                        } else {
+                            streakBroken = true;
+                        }
+                    }
+                    lookbackCount++;
+                }
+
+                badge.innerText = `${streak} Days`;
+            } catch (e) {
+                console.error("Error calculating workout streak:", e);
+            }
+        }
+
+        function loadRandomTip() {
+            const tipEl = document.getElementById('healthTip');
+            if (tipEl) tipEl.innerText = healthTips[Math.floor(Math.random() * healthTips.length)];
+        }
+
+        // Run Initializers Setup
+        loadRandomTip();
+        loadWeekStatus();
+        loadMacroLog();
+
+        // Lock dynamic database elements down securely as soon as they populate
+        setTimeout(() => { setDashboardInputState(true); }, 800);
+    </script>
+</body>
+
+</html>
