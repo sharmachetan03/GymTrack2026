@@ -129,6 +129,61 @@
             /* Critical browser fix for grid squeezing */
         }
 
+        .fitness-container {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        .fitness-stat-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #2b2b2b;
+        }
+
+        .fitness-stat-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 138, 42, 0.14);
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .fitness-label {
+            margin: 0 0 4px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .fitness-value {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1f1f1f;
+        }
+
+        @media (max-width: 700px) {
+            .fitness-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .section-title {
             margin: 0 0 16px;
             font-size: 0.96rem;
@@ -484,6 +539,41 @@
                 </div>
                 <div class="tip-card">
                     <p id="healthTip">Loading a health tip...</p>
+                </div>
+            </div>
+
+            <div class="fitness-container">
+                <div class="fitness-stat-card">
+                    <div class="fitness-stat-icon">👣</div>
+                    <div>
+                        <p class="fitness-label" id="steps-date"></p>
+                        <h3 class="fitness-value" id="fitness-steps">12,480</h3>
+                    </div>
+                </div>
+                <div class="fitness-stat-card">
+                    <div class="fitness-stat-icon">🔥</div>
+                    <div>
+                        <p class="fitness-label">Active Burn (<span id="burn-date"></span>)</p>
+                        <h3 class="fitness-value" id="fitness-calories">486 kcal</h3>
+                    </div>
+                </div>
+                <div class="fitness-stat-card">
+                    <div class="fitness-stat-icon">❤️</div>
+                    <div>
+                        <p class="fitness-label">Heart Rate (<span id="hr-date"></span>)</p>
+                        <h3 class="fitness-value">
+                            <span id="fitness-hr">--</span> <small>bpm</small>
+                        </h3>
+                    </div>
+                </div>
+                <div class="fitness-stat-card">
+                    <div class="fitness-stat-icon">🫁</div>
+                    <div>
+                        <p class="fitness-label">Blood Oxygen (<span id="spo2-date"></span>)</p>
+                        <h3 class="fitness-value">
+                            <span id="fitness-spo2">--</span>
+                        </h3>
+                    </div>
                 </div>
             </div>
         </section>
@@ -933,6 +1023,48 @@
 
         // Lock dynamic database elements down securely as soon as they populate
         setTimeout(() => { setDashboardInputState(true); }, 800);
+    </script>
+    <script>
+        fetch('fitness_data.json')
+            .then(response => response.json())
+            .then(data => {
+                const todayStr = new Date()
+                    .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    .toUpperCase();
+
+                const stepsDateEl = document.getElementById('steps-date');
+                const burnDateEl = document.getElementById('burn-date');
+                const hrDateEl = document.getElementById('hr-date');
+                const spo2DateEl = document.getElementById('spo2-date');
+
+                if (stepsDateEl) stepsDateEl.innerHTML = `${todayStr} Steps`;
+                if (burnDateEl) burnDateEl.innerHTML = todayStr;
+                if (hrDateEl) hrDateEl.innerHTML = todayStr;
+                if (spo2DateEl) spo2DateEl.innerHTML = todayStr;
+
+                const stepsEl = document.getElementById('fitness-steps');
+                if (stepsEl) {
+                    stepsEl.innerHTML = data.steps != null ? data.steps.toLocaleString() : '--';
+                }
+
+                const caloriesEl = document.getElementById('fitness-calories');
+                if (caloriesEl) {
+                    caloriesEl.innerHTML = data.calories != null ? `${data.calories} kcal` : '--';
+                }
+
+                const hrEl = document.getElementById('fitness-hr');
+                if (hrEl) {
+                    const hasHeartData = data.restingHR !== undefined && data.maxHR !== undefined && data.restingHR !== '--' && data.maxHR !== '--';
+                    hrEl.innerHTML = hasHeartData ? `${data.restingHR} / ${data.maxHR}` : '--';
+                }
+
+                const spo2El = document.getElementById('fitness-spo2');
+                if (spo2El) {
+                    const spo2Value = data.spo2 !== undefined && data.spo2 !== '--' ? data.spo2 : null;
+                    spo2El.innerHTML = spo2Value !== null ? `${spo2Value}%` : '--';
+                }
+            })
+            .catch(err => console.log('Waiting for initial Garmin sync file...', err));
     </script>
 </body>
 
