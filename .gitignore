@@ -6,4 +6,4 @@ __pycache__/
 *.py[cod]
 
 # Local data output
-fitness_data.json
+#fitness_data.json
