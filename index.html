@@ -178,6 +178,13 @@
             color: #1f1f1f;
         }
 
+        .bp-webchat__container,
+        .bp-webchat {
+            width: 420px !important;
+            height: 650px !important;
+            max-height: 80vh !important;
+        }
+
         @media (max-width: 700px) {
             .fitness-container {
                 grid-template-columns: 1fr;
@@ -548,6 +555,7 @@
                     <div>
                         <p class="fitness-label" id="steps-date"></p>
                         <h3 class="fitness-value" id="fitness-steps">12,480</h3>
+                        <small>Last updated: <span id="steps-updated">--</span></small>
                     </div>
                 </div>
                 <div class="fitness-stat-card">
@@ -555,6 +563,7 @@
                     <div>
                         <p class="fitness-label">Active Burn (<span id="burn-date"></span>)</p>
                         <h3 class="fitness-value" id="fitness-calories">486 kcal</h3>
+                        <small>Last updated: <span id="calories-updated">--</span></small>
                     </div>
                 </div>
                 <div class="fitness-stat-card">
@@ -564,15 +573,7 @@
                         <h3 class="fitness-value">
                             <span id="fitness-hr">--</span> <small>bpm</small>
                         </h3>
-                    </div>
-                </div>
-                <div class="fitness-stat-card">
-                    <div class="fitness-stat-icon">🫁</div>
-                    <div>
-                        <p class="fitness-label">Blood Oxygen (<span id="spo2-date"></span>)</p>
-                        <h3 class="fitness-value">
-                            <span id="fitness-spo2">--</span>
-                        </h3>
+                        <small>Last updated: <span id="hr-updated">--</span></small>
                     </div>
                 </div>
             </div>
@@ -1025,6 +1026,22 @@
         setTimeout(() => { setDashboardInputState(true); }, 800);
     </script>
     <script>
+        const formatLoadTimestamp = () => new Date().toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+
+        const setLoadTimestamp = (elementId, value) => {
+            const timestampEl = document.getElementById(elementId);
+            if (timestampEl && value !== null && value !== undefined && value !== '--' && value !== '') {
+                timestampEl.innerHTML = formatLoadTimestamp();
+            } else if (timestampEl) {
+                timestampEl.innerHTML = '--';
+            }
+        };
+
         fetch('fitness_data.json')
             .then(response => response.json())
             .then(data => {
@@ -1035,37 +1052,37 @@
                 const stepsDateEl = document.getElementById('steps-date');
                 const burnDateEl = document.getElementById('burn-date');
                 const hrDateEl = document.getElementById('hr-date');
-                const spo2DateEl = document.getElementById('spo2-date');
 
                 if (stepsDateEl) stepsDateEl.innerHTML = `${todayStr} Steps`;
                 if (burnDateEl) burnDateEl.innerHTML = todayStr;
                 if (hrDateEl) hrDateEl.innerHTML = todayStr;
-                if (spo2DateEl) spo2DateEl.innerHTML = todayStr;
 
                 const stepsEl = document.getElementById('fitness-steps');
                 if (stepsEl) {
-                    stepsEl.innerHTML = data.steps != null ? data.steps.toLocaleString() : '--';
+                    const stepsValue = data.steps != null ? data.steps.toLocaleString() : '--';
+                    stepsEl.innerHTML = stepsValue;
+                    setLoadTimestamp('steps-updated', stepsValue);
                 }
 
                 const caloriesEl = document.getElementById('fitness-calories');
                 if (caloriesEl) {
-                    caloriesEl.innerHTML = data.calories != null ? `${data.calories} kcal` : '--';
+                    const caloriesValue = data.calories != null ? `${data.calories} kcal` : '--';
+                    caloriesEl.innerHTML = caloriesValue;
+                    setLoadTimestamp('calories-updated', caloriesValue);
                 }
 
                 const hrEl = document.getElementById('fitness-hr');
                 if (hrEl) {
                     const hasHeartData = data.restingHR !== undefined && data.maxHR !== undefined && data.restingHR !== '--' && data.maxHR !== '--';
-                    hrEl.innerHTML = hasHeartData ? `${data.restingHR} / ${data.maxHR}` : '--';
-                }
-
-                const spo2El = document.getElementById('fitness-spo2');
-                if (spo2El) {
-                    const spo2Value = data.spo2 !== undefined && data.spo2 !== '--' ? data.spo2 : null;
-                    spo2El.innerHTML = spo2Value !== null ? `${spo2Value}%` : '--';
+                    const hrValue = hasHeartData ? `${data.restingHR} / ${data.maxHR}` : '--';
+                    hrEl.innerHTML = hrValue;
+                    setLoadTimestamp('hr-updated', hrValue);
                 }
             })
             .catch(err => console.log('Waiting for initial Garmin sync file...', err));
     </script>
+    <script src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"></script>
+    <script src="https://files.bpcontent.cloud/2026/07/20/10/20260720100251-K8GQGGUJ.js" defer></script>
 </body>
 
 </html>
