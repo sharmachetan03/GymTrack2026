@@ -90,12 +90,15 @@ def fetch_my_fitness_data():
             print(f"SpO2 sync error encountered: {spo2_error}")
 
         # Map the exact dictionary keys pulled from Garmin Connect
+        timestamp = datetime.datetime.now().strftime("%b %d, %Y %I:%M %p")
+
         data = {
             "steps": summary.get("totalSteps", 0),
             "calories": int(stats.get("activeKilocalories", 0)),
             "restingHR": resting_hr,
             "maxHR": max_hr,
             "spo2": spo2,
+            "last_updated": timestamp,
         }
 
         # Write out to a clean JSON file that your local web server can query

@@ -1026,20 +1026,15 @@
         setTimeout(() => { setDashboardInputState(true); }, 800);
     </script>
     <script>
-        const formatLoadTimestamp = () => new Date().toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true
-        });
-
         const setLoadTimestamp = (elementId, value) => {
             const timestampEl = document.getElementById(elementId);
-            if (timestampEl && value !== null && value !== undefined && value !== '--' && value !== '') {
-                timestampEl.innerHTML = formatLoadTimestamp();
-            } else if (timestampEl) {
-                timestampEl.innerHTML = '--';
-            }
+            if (!timestampEl) return;
+
+            const displayValue = value !== null && value !== undefined && value !== '--' && value !== ''
+                ? value
+                : '--';
+
+            timestampEl.innerText = displayValue;
         };
 
         fetch('fitness_data.json')
@@ -1057,18 +1052,20 @@
                 if (burnDateEl) burnDateEl.innerHTML = todayStr;
                 if (hrDateEl) hrDateEl.innerHTML = todayStr;
 
+                const lastUpdated = data.last_updated || '--';
+
                 const stepsEl = document.getElementById('fitness-steps');
                 if (stepsEl) {
                     const stepsValue = data.steps != null ? data.steps.toLocaleString() : '--';
                     stepsEl.innerHTML = stepsValue;
-                    setLoadTimestamp('steps-updated', stepsValue);
+                    setLoadTimestamp('steps-updated', lastUpdated);
                 }
 
                 const caloriesEl = document.getElementById('fitness-calories');
                 if (caloriesEl) {
                     const caloriesValue = data.calories != null ? `${data.calories} kcal` : '--';
                     caloriesEl.innerHTML = caloriesValue;
-                    setLoadTimestamp('calories-updated', caloriesValue);
+                    setLoadTimestamp('calories-updated', lastUpdated);
                 }
 
                 const hrEl = document.getElementById('fitness-hr');
@@ -1076,7 +1073,7 @@
                     const hasHeartData = data.restingHR !== undefined && data.maxHR !== undefined && data.restingHR !== '--' && data.maxHR !== '--';
                     const hrValue = hasHeartData ? `${data.restingHR} / ${data.maxHR}` : '--';
                     hrEl.innerHTML = hrValue;
-                    setLoadTimestamp('hr-updated', hrValue);
+                    setLoadTimestamp('hr-updated', lastUpdated);
                 }
             })
             .catch(err => console.log('Waiting for initial Garmin sync file...', err));
