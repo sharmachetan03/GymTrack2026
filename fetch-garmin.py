@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 from garminconnect import Garmin
@@ -63,6 +64,10 @@ def fetch_my_fitness_data():
         stats = client.get_stats(today)
         summary = client.get_user_summary(today)
 
+        distance_meters = _coerce_numeric(stats.get("totalDistanceMeters"))
+        distance_km = round(distance_meters / 1000,
+                            2) if distance_meters is not None else None
+
         resting_hr = "--"
         max_hr = "--"
         spo2 = "--"
@@ -90,11 +95,13 @@ def fetch_my_fitness_data():
             print(f"SpO2 sync error encountered: {spo2_error}")
 
         # Map the exact dictionary keys pulled from Garmin Connect
-        timestamp = datetime.datetime.now().strftime("%b %d, %Y %I:%M %p")
+        ist_now = datetime.datetime.now(ZoneInfo("Asia/Kolkata"))
+        timestamp = ist_now.strftime("%b %d, %Y %I:%M %p")
 
         data = {
             "steps": summary.get("totalSteps", 0),
             "calories": int(stats.get("activeKilocalories", 0)),
+            "distance_km": distance_km,
             "restingHR": resting_hr,
             "maxHR": max_hr,
             "spo2": spo2,

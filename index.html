@@ -150,6 +150,26 @@
             color: #2b2b2b;
         }
 
+        .lock-toggle-btn {
+            background: linear-gradient(135deg, #080707 0%, #1b130d 100%) !important;
+            color: #ffe3bf !important;
+            border: 1px solid rgba(255, 180, 102, 0.7) !important;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+            font-weight: 800;
+        }
+
+        .lock-toggle-btn:hover {
+            background: linear-gradient(135deg, #14110f 0%, #24170e 100%) !important;
+            color: #fff8ec !important;
+        }
+
+        .rest-day-badge {
+            background: #120d08 !important;
+            color: #ffd8b3 !important;
+            border: 1px solid rgba(255, 180, 102, 0.7) !important;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+        }
+
         .fitness-stat-icon {
             display: inline-flex;
             align-items: center;
@@ -521,9 +541,8 @@
             <div>
                 <h1>My Fitness journey 2026</h1>
             </div>
-            <button id="lockToggleBtn" class="reset-btn"
-                style="background: rgba(255,138,42,0.1); color: var(--accent-2); border-color: rgba(255,138,42,0.3); white-space: nowrap;"
-                type="button" onclick="handleDashboardLockToggle()">🔒 Locked</button>
+            <button id="lockToggleBtn" class="reset-btn lock-toggle-btn" style="white-space: nowrap;" type="button"
+                onclick="handleDashboardLockToggle()">🔒 Locked</button>
         </header>
 
         <section class="card">
@@ -538,8 +557,8 @@
                 <div class="streak-card">
                     <strong id="streakMessage">Consistency Streak Tracker</strong>
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <span
-                            style="font-size: 0.78rem; color: var(--accent-2); background: rgba(255, 138, 42, 0.1); border: 1px solid rgba(255, 138, 42, 0.2); padding: 4px 8px; border-radius: 6px; font-weight: 6px; text-transform: uppercase; letter-spacing: 0.05em;">☀️
+                        <span class="rest-day-badge"
+                            style="font-size: 0.78rem; padding: 4px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">☀️
                             Sunday Rest Day</span>
                         <span class="streak-badge" id="streakBadge">0 Days</span>
                     </div>
@@ -574,6 +593,14 @@
                             <span id="fitness-hr">--</span> <small>bpm</small>
                         </h3>
                         <small>Last updated: <span id="hr-updated">--</span></small>
+                    </div>
+                </div>
+                <div class="fitness-stat-card">
+                    <div class="fitness-stat-icon">🏃</div>
+                    <div>
+                        <p class="fitness-label">Distance (<span id="distance-date"></span>)</p>
+                        <h3 class="fitness-value" id="fitness-distance">--</h3>
+                        <small>Last updated: <span id="distance-updated">--</span></small>
                     </div>
                 </div>
             </div>
@@ -928,9 +955,9 @@
                 // Relock everything instantly
                 setDashboardInputState(true);
                 btn.innerText = '🔒 Locked';
-                btn.style.color = 'var(--accent-2)';
-                btn.style.background = 'rgba(255,138,42,0.1)';
-                btn.style.borderColor = 'rgba(255,138,42,0.3)';
+                btn.style.color = '#ffe3bf';
+                btn.style.background = 'linear-gradient(135deg, #080707 0%, #1b130d 100%)';
+                btn.style.borderColor = 'rgba(255, 180, 102, 0.7)';
                 return;
             }
 
@@ -952,9 +979,9 @@
             if (passwordField.value === "Chicu2016$") {
                 setDashboardInputState(false);
                 btn.innerText = '🔓 Unlocked';
-                btn.style.color = '#34c759';
-                btn.style.background = 'rgba(52,199,89,0.1)';
-                btn.style.borderColor = 'rgba(52,199,89,0.3)';
+                btn.style.color = '#ffe3bf';
+                btn.style.background = 'linear-gradient(135deg, #080707 0%, #1b130d 100%)';
+                btn.style.borderColor = 'rgba(255, 180, 102, 0.7)';
                 closePasswordModal();
             } else {
                 alert("Incorrect password. Controls remain locked.");
@@ -1047,10 +1074,12 @@
                 const stepsDateEl = document.getElementById('steps-date');
                 const burnDateEl = document.getElementById('burn-date');
                 const hrDateEl = document.getElementById('hr-date');
+                const distanceDateEl = document.getElementById('distance-date');
 
                 if (stepsDateEl) stepsDateEl.innerHTML = `${todayStr} Steps`;
                 if (burnDateEl) burnDateEl.innerHTML = todayStr;
                 if (hrDateEl) hrDateEl.innerHTML = todayStr;
+                if (distanceDateEl) distanceDateEl.innerHTML = todayStr;
 
                 const lastUpdated = data.last_updated || '--';
 
@@ -1074,6 +1103,15 @@
                     const hrValue = hasHeartData ? `${data.restingHR} / ${data.maxHR}` : '--';
                     hrEl.innerHTML = hrValue;
                     setLoadTimestamp('hr-updated', lastUpdated);
+                }
+
+                const distanceEl = document.getElementById('fitness-distance');
+                if (distanceEl) {
+                    const distanceValue = data.distance_km != null
+                        ? `${parseFloat(data.distance_km).toFixed(2).replace(/\.?0+$/, '')} km`
+                        : '--';
+                    distanceEl.innerHTML = distanceValue;
+                    setLoadTimestamp('distance-updated', lastUpdated);
                 }
             })
             .catch(err => console.log('Waiting for initial Garmin sync file...', err));
