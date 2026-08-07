@@ -12,6 +12,9 @@ load_dotenv()
 GARMIN_EMAIL = os.getenv("GARMIN_EMAIL", "")
 GARMIN_PASSWORD = os.getenv("GARMIN_PASSWORD", "")
 
+# Directory where session tokens will be stored to avoid rate limits
+TOKEN_DIR = os.path.expanduser("~/.garminconnect")
+
 
 def _coerce_numeric(value):
     if isinstance(value, (int, float)) and not isinstance(value, bool):
@@ -29,7 +32,18 @@ def _extract_spo2_value(payload):
         return None
 
     if isinstance(payload, dict):
-        for key in ("averageSpo2", "avgSpo2", "spo2", "spO2", "value", "percentage", "pulseOx", "pulseOxPercentage", "latestSpo2", "latestSpO2"):
+        for key in (
+            "averageSpo2",
+            "avgSpo2",
+            "spo2",
+            "spO2",
+            "value",
+            "percentage",
+            "pulseOx",
+            "pulseOxPercentage",
+            "latestSpo2",
+            "latestSpO2",
+        ):
             numeric_value = _coerce_numeric(payload.get(key))
             if numeric_value is not None:
                 return numeric_value
@@ -53,9 +67,12 @@ def _extract_spo2_value(payload):
 
 def fetch_my_fitness_data():
     try:
-        print("Logging into Garmin Connect...")
+        print("Logging into Garmin Connect with token caching...")
+        os.makedirs(TOKEN_DIR, exist_ok=True)
+        
+        # Initialize client with token storage to bypass login rate limits
         client = Garmin(GARMIN_EMAIL, GARMIN_PASSWORD)
-        client.login()
+        client.login(token_store=TOKEN_DIR)
 
         # Get today's current date format (YYYY-MM-DD)
         today = datetime.date.today().isoformat()
@@ -64,9 +81,8 @@ def fetch_my_fitness_data():
         stats = client.get_stats(today)
         summary = client.get_user_summary(today)
 
-        distance_meters = _coerce_numeric(stats.get("totalDistanceMeters"))
-        distance_km = round(distance_meters / 1000,
-                            2) if distance_meters is not None else None
+        distance_meters = _coerce_numeric(stats.get("totalDistanceMeters")) or 0
+        distance_km = round(distance_meters / 1000, 2)
 
         resting_hr = "--"
         max_hr = "--"
@@ -110,7 +126,7 @@ def fetch_my_fitness_data():
 
         # Write out to a clean JSON file that your local web server can query
         with open("fitness_data.json", "w") as f:
-            json.dump(data, f)
+            json.dump(data, f, indent=4)
 
         print("Successfully synced steps, workout burn, heart rate, and SpO2 to dashboard!")
 
