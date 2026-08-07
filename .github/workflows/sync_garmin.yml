@@ -33,6 +33,7 @@ jobs:
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMIN_TOKENS_B64: ${{ secrets.GARMIN_TOKENS_B64 }}
         run: python fetch-garmin.py
 
       - name: Commit and push updated JSON data
