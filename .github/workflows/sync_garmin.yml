@@ -22,6 +22,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install garminconnect python-dotenv curl_cffi
+          
+      - name: Restore Garmin Session Tokens
+        uses: actions/cache@v3
+        with:
+          path: ~/.garminconnect
+          key: garmin-tokens-${{ runner.os }}
 
       - name: Run data fetch script
         env:
