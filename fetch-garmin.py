@@ -72,7 +72,7 @@ def fetch_my_fitness_data():
         
         # Initialize client with token storage to bypass login rate limits
         client = Garmin(GARMIN_EMAIL, GARMIN_PASSWORD)
-        client.login(token_store=TOKEN_DIR)
+        client.login(TOKEN_DIR)
 
         # Get today's current date format (YYYY-MM-DD)
         today = datetime.date.today().isoformat()
