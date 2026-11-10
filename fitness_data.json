@@ -1,9 +1,9 @@
 {
-    "steps": 4214,
-    "calories": 86,
-    "distance_km": 3.33,
-    "restingHR": 66,
-    "maxHR": 109,
+    "steps": null,
+    "calories": 0,
+    "distance_km": 0.0,
+    "restingHR": null,
+    "maxHR": null,
     "spo2": "--",
-    "last_updated": "Nov 09, 2026 08:36 PM"
+    "last_updated": "Nov 10, 2026 06:39 AM"
 }
